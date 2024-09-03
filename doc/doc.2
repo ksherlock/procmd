@@ -1,0 +1,1314 @@
+SCI
+
+   This is a PRINT USING module for scientific notation.
+
+   The syntax is quite similar to the USING module, so I will
+not go into much detail here.  The format string MUST contain
+exactly one digit position (# character) before the decimal point,
+or you will get a syntax error.  You can use any text to replace
+the "E" in the usual Applesoft format.  When printed, the number
+is preceded by either a space or a minus sign depending on its
+sign.  A carriage return is NOT printed either before or after
+the number, allowing other text on the line.  The syntax to be
+used (it must be in a program) is:
+
+	PRINT CHR$(4)"SCI #.###,### E":N   or
+
+	PRINT CHR$(4)"SCI";FT$:N   (note the colon before N)
+
+where FT$ is the format string and N is the Applesoft numeric
+expression to be printed.  (The space after SCI in the first
+example is optional and just makes the program read better.)
+Examples of legal format strings are:
+
+	"#.##### EXP "  (the space after "EXP" will be
+	                 printed before the exponent)
+	"#.###,## x10^"
+
+	"#.## E"
+
+===============================================================
+
+RDLINE
+
+   This command is for use only in a program and has syntax
+
+	PRINT CHR$(4)"RDLINE template":A$   or
+
+	PRINT CHR$(4)"RDLINE";F$:A$
+
+where F$ is the formatting string, or
+
+	PRINT CHR$(4)"RDLINE";F$:A$,DF$
+
+where F$ is the formatting string and DF$ is a default, which
+will be printed to the screen for the user to change or pick up
+with the right arrow key.  (Underlines will be printed to fill
+left over spots if the default is shorter than the template.)
+
+   This is an "input almost anything" command, which will place
+the input into the string A$ (any string variable is accepted).
+The template is a string made up of command characters and
+formatting characters.  The command characters are
+
+	^ / - _ % # * A a B b C c
+
+and all other characters are formatting characters except ~ which
+is a lead in allowing the command characters to be interpreted as
+formatting characters instead; and ! (first character only) which
+tells the program to allow the up and down arrows to terminate
+input.  The command characters govern what input characters are
+allowed.  The formatting characters are just printed to the screen
+and the cursor jumps across them.  Input always ends with RTN or
+ESC or the up/down arrows (when allowed).  The final string (A$ in
+the examples) is what is shown on the screen (exiting will wipe out
+the underlines).  The last character typed (one of the allowed exit
+characters) is left active in the $C000 keyboard location.  The
+program should clear this by doing a GET or some other method of
+clearing the keyboard strobe.  This is done this way so that the
+exit key is easily passed to the program where it can be acted
+upon as the programmer wishes.  RTN, backspace, DEL, and other edit
+keys are not allowed in any input and retain the function of those
+keys (except for RTN which is not accepted by certain command
+characters).  When this is used to get input, the command characters
+will be printed to the screen as underlines; formatting characters
+are printed literally.  The command characters have these meanings:
+
+   ^ = accept alpha-numerics, periods, and RTN, input is upshifted.
+   / = same as ^ but also accepts /.
+   - = accept any character except controls, end input on RTN.
+   _ = same as - but RTN is not accepted.
+   % = accept only numbers or space and left justify final result.
+   # = accept only numbers or space.
+   * = accept only numbers.
+   A and a = accept only alpha characters.
+   B and b = accept alpha characters and RTN.
+   C and c = accept alpha characters, space and RTN.
+
+   A,B and C convert the input character to upper case.
+
+Some examples are:
+
+	PRINT CHR$(4)"RDLINE %%,%%%,%%*.**":N$
+
+This will input a number into the template __,___,___.__ and will
+accept numbers or space characters except for the _.__ part which
+will require numeric input.  RTN is not accepted until the blanks
+are all filled in.  If spaces and then 1,234.56 is input then the
+resulting string will be 1,234.56 since the % signals that the
+leading spaces should be deleted from the final string.
+
+	PRINT CHR$(4)"RDLINE #*~-AAA~-**":DA$
+
+will get input into the template __-___-__ and will force a
+date-like input in which the first character can be a space,
+the middle three must be alpha and that input will be converted
+to upper case, and the others require numeric input.  Note that
+the character ~ is used to signal that the following - is a
+formatting character instead of a command character.
+
+	PRINT CHR$(4)"RDLINE A-------------------":N$
+
+will input a string of at most 20 characters, the first of which
+must be alpha and will be converted to upper case.  Except for
+the first character, the input can be terminated by RTN at any
+point.  The input string will never be empty and can contain
+commas, spaces, and periods, etc.
+
+	PRINT CHR$(4)"RDLINE ~/A////////////////////////":P$
+
+will force input of full ProDOS pathname syntax with / appended
+to the beginning of the resulting string.
+
+   During input these line editing commands are supported:
+
+	Left/right arrows = move cursor.
+	TAB (or ^I) = toggle insert mode.
+	DEL = delete character to left of cursor.
+	^D  = delete character under cursor.
+	^B  = beginning of line.
+	^N  = move cursor to end of default string.
+	^W  = next "word".
+	^R  = replace with original default.
+	^Q  = wipe out from cursor to end or next formatting char.
+
+Insert mode is indicated by a vertical line cursor.  Inserting
+or deleting affect only the segment between formatting characters,
+if any.
+
+
+   There is also the ampersand command &INPUT in this module.
+This is a more traditional "input anything" that has the syntax
+
+	&INPUT A$
+
+and is mainly intended for reading from an open disk file.
+
+===============================================================
+
+CLOCK
+
+   The CLOCK module provides an interrupt driven clock on the
+Apple //c.  You must include the date in the command as in
+
+	CLOCK 24/MAR/85
+
+   This will result in the screen being cleared and a time
+template appearing in the upper right hand corner.  You should
+use the arrow keys and numeric keys to give the current time
+in military format.  The clock will start as soon as you hit
+RETURN.  The clock will continuously display the time in the
+upper right hand corner in 12 hour format.  This is done so
+that you are always aware of whether the clock is running or
+not.  Hitting RESET will turn the clock off.
+
+   Disk operations, or anything that disables interrupts, will
+cause the clock to lose time.  Thus there is a provision for
+correcting the clock on the fly.  If you press the mouse button
+then the time will be bumped to the next minute.  Holding down
+the closed Apple key at the same time makes it possible to
+reset the time quickly.  Note that the time is shown in 12 hour
+format, so you should go past 12 twice when resetting the time
+with this method.  (This will not change the date.)
+
+   In the PROCMD.DOC/COMMANDS directory are three other versions
+of the clock module: a 24-hour display version, and two versions
+"CLOCKE.XX" that will work on a //e with enhanced roms and a
+mouse card.  Just rename and substitute one of these for the
+CLOCK module in the PROCMD/COMMANDS directory if you want to.
+The CLOCKE versions are 4 pages long instead of the 3 pages
+used by the //c versions.  All have identical ID numbers.
+The CLOCK and MOUSE modules are mutually incompatible. Using one
+will turn the other off.
+
+   CAUTION:  Care must be used with any interrupt driven routine
+to be sure that the routine is not overwritten.  The routine
+checks for problems and turns itself off if it sees trouble,
+but you should not rely on this.  When in doubt, hit the RESET
+key or issue the RESET command, before using some SYS file.
+Do not use CLOCK with versions of ProDOS prior to 1.1.1.
+
+===============================================================
+
+ONEKEY
+
+   The ONEKEY module will convert the single key commands
+
+	A,R,L,E,M  to  AUTO, RENUMBER, LIST, EDIT, and CALL-151.
+
+For this to work in the A, R and E cases, the ONEKEY module
+MUST be loaded AFTER the EDIT and RENUMBER modules.  You may
+prefer these to similar macro functions.
+
+===============================================================
+
+HEXDEC
+
+   This module provides hex/decimal conversion.  To convert a
+number from decimal to hex just type
+
+	D(decimal #)
+
+or, for the other direction, type
+
+	H(hex #)
+
+   For example:
+
+	D1000   prints   $03E8
+	D-151   prints   $FF69
+	H1000   prints   4096
+	HFF69   prints   65385
+
+   This can be programmed.  For example, if you want your program
+to print the hex equivalent of the value of the variable AD  you
+can do this by something similar to:
+
+	1000 PRINT "The address is ";
+	1010 PRINT CHR$(4)"D";AD
+	1020 PRINT " in hex."
+
+(A carriage return is not done at the end of the number so that
+it can be inserted into a text line in this way.)  If  AD = 4100
+then this program segment will print the line:
+
+	The address is $1004 in hex.
+
+===============================================================
+
+POP
+
+   The POP command provides an easy way to remove one level of
+the prefix.  POP2 will remove two levels, and so on.  POP and
+POP1 are equivalent.  For example, if the current prefix is
+
+	/HARD1/MYDIR/STUFF/WHEW/
+
+and you type POP2, then the prefix instantly becomes
+
+	/HARD1/MYDIR/
+
+You could program this as in this program segment:
+
+	100 PRINT CHR$(4)"PREFIX"
+	110 INPUT PFX$
+	120 IF LEN(PFX$) > 7 THEN IF RIGHT$(PFX$,7) <> "/MYDIR/"
+		THEN PRINT CHR$(4)"POP":GOTO 100
+
+===============================================================
+
+EJECT
+
+   The EJECT module is for use with 3-1/2 inch Unidisk drives,
+and gives the ability of ejecting a Unidisk to Applesoft programs.
+You can also use it in immediate mode if you really want that.
+
+   It will select the disk to eject, either by default (last
+device used) or by pathname or by slot and drive parameters.
+The syntax of these modes from the keyboard is (from a program
+use PRINT CHR$(4)"EJECT") etc.):
+
+	EJECT
+	EJECT pathname  (full or partial)
+	EJECT,S5,D1
+
+   Also accepted is
+
+	EJECT pathname,S5,D1
+
+   If a Unidisk controller is in the device indicated but does
+not have a drive connected then an error "NO DEVICE CONNECTED"
+will be generated.  In other cases (eg., the device is a disk ][)
+there will be no error generated (and no action taken).  This
+allows using the command by a program on an unknown device,
+without having to trap an error.
+
+   You can also command an eject of ALL existing Unidrives by
+including an "@" parameter as in EJECT,@0.  You must include a
+number after the @ sign but its value is immaterial.  This mode
+never produces an error.
+
+   When you use a partial pathname, the device assumed will be
+whatever BASIC.SYSTEM regards as the default device.
+
+============================================================
+
+THE CMDS MODULE
+
+   Have you ever been working with PROCMD and realized you
+wanted to use one of the modules that you did not load into
+memory?  Although you can load another module without great
+trouble, it is a bit inconvenient at times.  This module CMDS
+is the answer to that.  To use CMDS, you should load it FIRST.
+(This is not strictly necessary, but it works best that way.)
+For convenience in doing that at times you are in BASIC and
+didn't think to load some modules you need, CMDS was made a BIN
+file so that it can be executed by simply typing -CMDS, or
+-COMMANDS/CMDS if it is in the subdirectory COMMANDS, etc.
+Once it is in memory any other command can be invoked by simply
+issuing the name of the command file.  For example, if you want
+to copy a file, just type
+
+	COPY PATHNAME1,PATHNAME2
+
+and the COPY command will be loaded into memory and this
+command will be acted upon.
+
+   Actually it is not quite that simple.  If you issue the
+& command to see the CMDS syntax, it will give
+
+	CMDS /PROCMD/COMMANDS/
+
+and this means that other commands are expected to be in the
+directory /PROCMD/COMMANDS.  Of course, that directory may
+not be on line if you are working from hard disk or Unidisk.
+No matter, you can change the CMDS directory specification by
+issuing the CMDS command followed by the directory containing
+your PROCMD command modules.  It is suggested that this be
+given as a full pathname so that you can change directories
+without having to issue this command again.  For example, if
+your commands are in /HARD1/PROCMD/COMMANDS, then just issue
+
+	CMDS /HARD1/PROCMD/COMMANDS
+
+   There are some points to be considered.  The commands looked
+for are just those whose names are the same as the module
+names.  This works for EDIT, for example, but not AUTO.
+Similarly RESET is not a file name but is in the POINTERS file.
+To get RESET into memory you must issue the POINTERS command
+first.  You could, of course, make a copy of the POINTERS file
+and call it RESET.  As another example, ONEKEY is the name of a
+command file but is not itself a command.  To get the ONEKEY
+commands into memory, you type ONEKEY.  Since this is not a
+command it will cause a syntax error, but that is ok, its
+command set will now be in memory.  (Remember though that
+ONEKEY should come after EDIT and RENUMBER are loaded, or its
+utility will be diminished.)  Commands that are loaded this way
+stay in memory just as if they were loaded the old way.
+
+   Command files that have the same name as a BASIC command
+will not be loaded by the CMDS facility.  This only effects
+the HGR and PRINT modules, but these are not meant as immediate
+commands anyway, so this is of little consequence.
+
+   You can, and probably should, change the default directory
+inside the CMDS file from /PROCMD/COMMANDS/ to a full pathname
+so you don't have to always type the CMDS command to change it.
+It is located at relative byte $2D4 in the CMDS file.  It MUST
+be "negative ascii", that is the high bit of its bytes must be
+set.  It MUST end with a "/" then a carriage return $8D and
+then a zero.  Also its length (including the slash, but not the
+carriage return) must be put in relative byte $2FE  (now a $11,
+the length of "/PROCMD/COMMANDS/").
+
+   There is some danger in using this command file, since there
+is a chance that it will have a memory conflict when trying to
+execute some other file.  It could, possibly, crash the system.
+This possibility is unavoidable because of the way BASIC.SYSTEM
+works.  I have tried to minimize this possibility, but it is
+still there.  For this reason you should periodically save any
+program you are working on; good advice even without this
+consideration.  If a PROGRAM TOO LARGE error occurs when
+issuing a command not in memory, then this means that there is
+not enough space to do it, and the command has not been loaded.
+This will happen, for example when LOMEM is set fairly high.
+If you have the RENUMBER module in memory, the MERGE command
+automatically sets LOMEM as low as it can be, so then perhaps
+you can reissue the rejected command.  (This is true even
+though there is nothing to merge.)
+.FF
+
+SETINFO
+
+   The syntax of this command is
+
+	SETINFO pathname [,T type, A auxtype, @ access]
+
+   All three parameters are optional.  This allows changing a
+file's type (except for DIR files), auxtype, and access.  The
+the access byte is made up of 5 significant bits (you cannot
+modify the rest which are all zero.  These are  DNB...WR  going
+from high bit to low.  These mean, when set:
+
+	D = destroy enable
+	N = rename enable
+	B = backup needed
+	W = write enabled
+	R = read enabled
+
+   An ordinary unlocked file has access $C3 or $E3.  If you
+issue the command  SETINFO myfile,@0  you will not even be able
+to read the file by ordinary means (if a BAS file, for example,
+you could not load it).  Using SETINFO myfile,@$C3 would unlock
+it for reading again.  (However just a regular UNLOCK command
+would do the same.
+
+============================================================
+
+PATH
+
+   The syntax of the PATH command is
+
+	PATH filename [,T type,S slot#,D drive #]
+
+   All three parameters are optional.  If slot and drive are
+not given then the last accessed volume is used.  This command
+searches the entire volume for the specified file.  If not
+found then you get a file not found error message.  If found
+then the prefix is set to the directory containing the file and
+no message is printed.  (Use the PREFIX command or CATALOG to
+see where it ended up.)  If the file is a directory then the
+prefix is set to that directory and not the previous one
+pointing to it.
+
+   If the T parameter is present then it only looks for files
+of the type specified (in case there are several files of the
+same name).
+.FF
+
+COMPARE and PASTE
+
+   These two commands are in the command file COMPARE.  The
+syntax for COMPARE is
+
+	COMPARE pathname1,pathname2
+
+and a similar syntax also applies to PASTE.  The COMPARE command
+will read the two files and compare them byte for byte.  If no
+differences are found then it exits and the Applesoft prompt
+returns.  If there are differences then 128 bytes of each file
+are displayed at the position where the first difference exists.
+Bytes which differ are shown in inverse video.  At this point
+you can hit ESC to quit the routine, RETURN to continue looking
+for differences, right/left arrows to move the displays one line
+(16 bytes) in the file, up/down arrows to move them eight lines.
+(Note that the arrow keys display the appropriate range of the
+files even if there are no differences in that 128 byte range,
+the RTN key does not.)  You can also adjust the offset of the
+position in the second file relative to the first by pressing
+the open or closed Apple keys together with a number key.
+This allows searching for further differences in files which
+have had an insertion or a deletion.
+
+   The control-P key dumps the display to the printer in slot 1.
+In this case bytes that differ are marked with a "<" after them.
+
+   If you issue this command in 40 column mode it will switch
+in 80 columns.  It uses some mousetext, and so the display will
+look odd if not used on an enhanced //e or a //c or IIgs.
+
+--------
+
+   The PASTE command will append the second named file to the
+end of the first.
+
+   CAUTION:  This will not change the second file but the
+original file is modified.  You may want to copy the first file
+to another filename before you do this, in case of trouble, or
+or in case you want to change the first file and paste it again.
+.FF
+
+		DOUBLE HIGH RESOLUTION GRAPHICS
+
+   The modules HGR, DHGR, FILL, PRINT, MOUSE, RGB and HLOAD
+contain double high resolution graphics routines.  These can be
+used only on an Apple //c or a //e with "revision B" motherboard
+and a jumper on the 80-column card.
+
+   These modules are slightly different from the rest because
+(except for HLOAD and HSAVE) they work using "ampersand" commands
+instead of added ProDOS commands.  The "&" listing of added
+commands does not show these commands.
+
+THE HGR MODULE
+
+   The module HGR has routines for plotting points and lines
+in "color double high resolution" graphics.  This double hires
+mode has a resolution of 140x192.  (Each color dot comprises
+four pixels for a total of 560 pixels across.)  The module also
+contains shape drawing routines in 560x192 resolution.
+
+   The HGR module is loaded in the same way as the others,
+by  BLOAD COMMANDS/HGR,TCMD,A$4000  and a  CALL 4 * 4096.
+The commands it contains are:
+
+	&HGR  (initializes the routines and clears the screen)
+	&HGR2 (the same as &HGR, but the full screen is used)
+	&HCOLOR= (sets the color 0 to 15)
+	&HPLOT X,Y (TO X2,Y2 etc.)  (does the plotting)
+	&PLOT X,Y (TO X2,Y2 etc.)   (does an "XPLOT")
+	&DRAW S AT X,Y   (similar to the usual DRAW)
+	&XDRAW S AT X,Y  (similar to the usual XDRAW)
+
+   The horizontal coordinate for plotting should be in the
+same 0-279 range as ordinary hires.  The routines convert
+this to the 0-139 resolution actually used.  This makes it
+very easy to convert present hires programs to these routines.
+(&DRAW and &XDRAW are 560x192 based routines but the starting
+coordinates must be as in the other commands.  This is to
+improve compatibility and also to ensure color integrity
+of shapes.)  A continuation of an &DRAW (by not specifying
+coordinates) does not have this limitation.  CAUTION: The
+first &DRAW used MUST have the X,Y coordinates specified.
+
+   The 15 available colors for the &HCOLOR command are:
+
+	 0 - black                8 - brown
+	 1 - magenta              9 - orange
+	 2 - dark blue           10 - grey 2
+	 3 - violet              11 - pink
+	 4 - dark green          12 - light green
+	 5 - grey 1              13 - yellow
+	 6 - medium blue         14 - aquamarine
+	 7 - light blue          15 - white
+
+These are the same as the Apple's low resolution colors.
+.FF10
+
+   &DRAW and &XDRAW work with standard shape tables but
+draw in 560x192 resolution.  The &HCOLOR command has no
+effect on the &DRAW routines.  The starting X-coordinate
+must be in the range 0-279 as for the other routines.
+(Thus a shape always starts on a pixel which is a multiple
+of four from the left, but left/right moves are of one pixel
+distance.)  Before using these, set ROT, SCALE, and the
+the shape table pointer as you would in ordinary high
+resolution graphics.  Set HCOLOR to white (3,7) or black
+(0,4).  [Note that this is the ordinary HCOLOR which is
+completely independent of &HCOLOR.  Support for white and
+black is included so that one can erase an image by drawing
+it in black.  Other colors will not produce useful results.]
+CAUTION: In ProDOS it is important that you protect your
+shape table by setting LOMEM above it.
+
+   Note:  Because of the internal conversion of the horizontal
+range 0-279 used by the command syntax to the 0-139 range used
+internally, the command  &HPLOT 11,0  has the same effect as
+&HPLOT 10,0  and similarly for any odd X-coordinate.  This can
+be a source of confusion.
+
+
+   The DEMO/D.BRIAN program is a double hires version of the
+well known "Brian's theme" program and illustrates the use
+of these commands.
+
+
+   The DEMO/DRAW program is an adaptation of an old shape
+demo to the double hires XDRAW routine.  DEMO/DRAW2 is an
+alternative version.
+
+
+   The DEMO/COLOR program is of the same type as DEMO/DRAW
+except that it uses &HPLOT and &PLOT instead of the DRAW
+routines.
+
+
+   Because of the enhanced color capability of double hires,
+these demos are quite impressive.
+
+
+ACCESSING THE ROUTINES FROM MACHINE LANGUAGE
+
+   Except for &DRAW and &XDRAW, it is easy to use these routines
+from machine language programs.  They can be accessed by doing a
+JSR to the location at relative byte:
+
+	$1E --- HPLOT and PLOT
+	$21 --- HGLIN
+	$24 --- HCOLOR
+	$27 --- HGR2 and HGR
+.FF10
+
+   If the HGR module is the only one (or the first one) loaded
+then these routines are all on page $97 (so that HGR2 would be
+at $9727 for example).
+
+   The horizontal coordinate for the machine language entries
+must be in the 0-139 ($00-$8B) range, just half that of the
+range used by the ampersand commands in BASIC.
+
+   The description of how to use these routines follows:
+
+HPLOT  Entered with coordinates in X,Y.  All registers
+	are scrambled.  Coordinates are saved at locations
+	$E0 and $E2.
+
+HGLIN  Plots line from point whose coordinates are in
+	$E0, $E2 to the point whose coordinates are in
+	in the A,Y registers.  On exit, the end
+	coordinates are put in $E0, $E2.  All registers
+	are scrambled.  This should usually be called
+	only after a previous call to HPLOT.
+
+	[The HPLOT and HGLIN routines do a "PLOT" or an
+	"XPLOT" depending on the sign of location $EB
+	(DECIMAL 235): positive (<$80) or negative (=>$80).]
+
+HCOLOR  Entered with color in the A register.
+	All registers are scrambled.
+
+HGR and HGR2  Clear the screen, and do all necessary
+	initialization.  This must be called with X register
+	holding 0 for HGR2 and holding 1 for HGR.  All of
+	the registers are scrambled.
+
+
+   The DEMO/SWISH program is an example of kinetic art,
+and demonstrates use of these routines from machine language.
+Note that the BASIC part of the program uses the RESET command
+to clear out all modules before loading the HGR module. This
+is done because the machine language part of the program expects
+the high resolution routines to be at the absolute addresses as
+indicated above.
+
+   DEMO/SWISH.S is the Merlin-pro source file for the main
+part of the SWISH program.  It demonstrates how to use these
+line plotting routines from assembly language.
+.FF
+
+THE DHGR MODULE
+
+   The DHGR module contains "black and white" double high
+resolution routines.  These are line drawing routines using
+the full 560x192 resolution of double hires mode, but lacking
+color capability.  The commands are
+
+	&&HGR      (same as &HGR in the HGR module)
+	&&HGR2     (same as &HGR2 in the HGR module)
+	&&HPLOT X,Y (TO X1,Y1 etc)
+	&&PLOT X,Y (TO X1,Y1 etc)
+
+and they act just as do the similar commands in the HGR module
+except that the range for the X coordinate is 0-559.  The
+&&HGR and &&HGR2 commands also set HCOLOR = 7.  You can set
+HCOLOR = 0 to plot a line in black, otherwise you should keep
+HCOLOR = 7 for these routines.  Note that this is "HCOLOR" and
+not "&HCOLOR".
+
+   The routines have the same relative entry points from machine
+language as their counterparts in the HGR module, but the entry
+conditions differ.  The HPLOT routine should be entered with
+A = y coor, X = x coor low, Y = y coor high, and HGLIN should be
+entered with A = x coor low, X = x coor high, Y = y coor. Note
+that this module is only 2 pages long compared to 3 for HGR so
+that this will affect the absolute addresses of routines
+accordingly.
+
+   The DHGR routines are used in the DEMO/FILL2 program.
+.FF
+
+THE FILL MODULE
+
+   The module FILL contains a double high resolution color
+fill routine.  It also works via "&" commands, which are:
+
+	&COLOR= C       (sets a solid color for the fill command)
+	&FILL AT X,Y    (fills starting at point X,Y,  X < 280)
+	&FILL W AT X,Y  (same but uses 32 byte color table at adrs W)
+
+(Note that the &COLOR command differs from &HCOLOR.)
+
+   Using a solid color (1-15) for the fill needs no further
+explanation.  The color table provision makes available 15 to
+the 56th power different color patterns for the fill routine.
+A color table is 32 ($20) bytes long.  The high bits of the
+bytes in the table are not used.  The table is formatted 4x8
+bytes.  Discarding the high bits, the color dots are read
+across 4 bits at a time.  (Note: A bit is substituted for
+any of these 4 bit segments that is all zeros.  Otherwise
+the fill routine would hang up the computer.)
+
+   The bit pattern in a four bit color dot goes as in the
+following table, showing the least significant bit first:
+
+	BLACK        0000	BROWN        0010
+	MAGENTA      0001	ORANGE       0011
+	DARK BLUE    1000	GREY2        1010
+	VIOLET       1001	PINK         1011
+	DARK GREEN   0100	LIGHT GREEN  0110
+	GREY1        0101	YELLOW       0111
+	MEDIUM BLUE  1100	AQUAMARINE   1110
+	LIGHT BLUE   1101	WHITE        1111
+
+[Note that the LEAST significant part of a byte in the table
+belongs to the color dot to the left and that color dots
+cross byte boundaries until four bytes (one horizontal line
+in the table) are used.]
+
+   The program DEMO/FILL demonstrates the solid fill mode by
+filling the inside and outside of an irregular polygon.
+
+   The program DEMO/FILL2 demonstrates the use of a color table.
+The table is randomly generated and placed at $300.  It also
+uses the DHGR module instead of HGR to draw the polygon.
+
+   The program DEMO/COLOR.CHART uses the color table collection
+DEMO/MIXTURES to show a chart of the 225 simplest patterns
+involving just two different colors.  The table itself was
+generated by the assembly source file DEMO/MIXTURES (a Merlin
+assembler file) and study of this source file will help in
+understanding the structure of a color table in general.
+.FF10
+
+   The program DEMO/BAR is a simple bar chart demo using FILL.
+
+   The number of different color tables is 15 raised to the 56th
+power, a number so large that it is infinite for all practical
+purposes.  This is the number of different fill patterns which
+are available to this versatile fill routine.
+
+   The fill routine can be accessed from machine language
+programs.  This entry point is at relative byte $1E in the FILL
+module.  It should be entered with the X,Y coordinates of the
+initial fill point in the X,Y registers (in the 140x192 format).
+Also, the address of the fill pattern table must be in the
+locations $EE, $EF.
+
+   To use a solid fill color from machine language you can JSR
+to the COLOR routine at relative location $21 with the desired
+color in the A-register.  This routine sets up the table pointer
+so that you need only JSR to the FILL routine after this call.
+
+   If the HGR module is the first one loaded and the FILL
+module is the second one then these entry points into the FILL
+routines will be on page $95.
+
+
+===============================================================
+
+THE PRINT MODULE
+
+   PRINT is a double hires character generator.  Actually it is
+somewhat of a cross between a character generator and a bit mapped
+drawing routine.  As such it is very versatile.
+
+   The syntax to use with PRINT is
+
+	&PRINT W AT X,Y:"string"
+
+Here W is the address of the font to be used.  This need only be
+specified the first time PRINT is used.  X and Y are the coordinates
+of the upper left corner of the start of printing in 280x192 format.
+
+   If the coordinates and font address are all omitted, printing is
+continued from the last used position.
+
+   PRINT has three modes depending on the value of HCOLOR:
+
+	HCOLOR = 0 to 3 yields an EOR type printing.
+	HCOLOR = 4 or 5 causes the background to be erased.
+	HCOLOR = 6 or 7 causes overstrike printing.
+
+.FF10
+
+   Each entry in a font table has its own horizontal and vertical
+format instructions.  This makes it possible to use proportionally
+spaced fonts and also enables use of the PRINT module to do more
+general types of bit mapped graphics.
+
+   Each entry of a font table has the following format:
+
+Byte 1 = ascii (positive) of the character attached to the entry.
+Byte 2 = number of bytes in the entry (including header).
+Byte 3 = number of 4-bit color pixels horizontally.
+Byte 4 = number of vertical lines.
+
+This is followed by the character data.  The first byte contains
+the first two pixels, the first being the low nibble, and so on
+until the first line is used.  (If the number of pixels is odd,
+then the last nibble is not used.)
+
+   The table must end with a zero byte.
+
+   The FONT.EDIT program lets you create or edit a font. It is
+limited to fonts at most 8 pixels (32 bits) across and 16 down,
+but font tables do not generally have this limitation. There is
+a font on the disk, called DEMO/FONT.  This is used by the
+DEMO/BAR and DEMO/ANIMATION programs.  It has all printing ASCII
+characters defined.  Another short "font" called DEMO ANI.FONT
+is used by DEMO/ANIMATION and contains block graphics characters.
+
+   You can access the PRINT routine from machine language at
+relative byte $1E.  This should be entered with the character
+to be printed in the A register in positive ascii.  The address
+of the font table should be at relative byte $1B,$1C.  The
+coordinates of the starting point, in 140x192 format, should be
+in locations X0 = $E0 and Y0 = $E2.
+
+   The program DEMO/ANIMATION uses the block graphics capability
+of the PRINT module to do a simple animation.  It also uses the
+DHGR and FILL modules, and uses the regular DEMO/FONT file as
+well as the small font DEMO/ANI.FONT containing the block shapes.
+This demo is designed to illustrate most of the capabilities of
+these modules.  It is an "honest" demo, containing nothing out
+of reach of the average Applesoft programmer.
+.FF
+
+THE MOUSE MODULE
+
+   This module requires a //c or a //e with the ROM enhancement
+and a mouse card.  It contains interrupt driven routines which
+allow the user to move objects around the double high resolution
+screen using the mouse.  This is transparent to the BASIC program.
+
+   The objects that can be moved are characters from a FONT file
+having the same format as for the PRINT module.  These are
+initially placed on the screen by certain ampersand commands.
+The module accesses characters in the font by means of "logical
+object numbers".  This allows assignment of the same character
+in the font to different logical numbers and hence to distinct
+screen objects.  The logical numbers must be in the range 0-127
+and number 0 designates the mouse cursor.  (Thus, any character
+in the font can be designated as the cursor.)  The "hot spot"
+is always the upper left corner of an object (extending somewhat
+below and to the right).
+
+   The commands in the MOUSE module are:
+
+	&INT  or  &INT W  (initializes mouse interrupt routines)
+	                  (W is the font address - default $4000)
+	&LET N,A$         (assigns A$ to logical object number N)
+	&STORE N AT X,Y   (puts logical object N on the screen
+	                   at X,Y.  0<X<280.  It can then be moved
+	                   with the mouse independent of program
+	                   control.)
+	&STORE N          (removes object N from the screen)
+	&POS N,X,Y,S      (reads the position of object N into the
+	                   variables X,Y and mouse status into S.)
+	&WAIT 1           (turns interrupts off, disabling mouse)
+	&WAIT 0           (turns interrupts back on)
+	&END              (disconnects routines, disables mouse)
+
+   Mouse status returns only the three high bits of the status
+location ($778+slot).  Bit 7 = button down, bit 6 = button was
+down, bit 5 = position changed.  (See your mouse documentation.)
+
+   Plotting is done similarly to the PRINT module but is always
+of the XOR type and plots only one character at a time, not
+general strings, and the coordinates must be given for each
+character.  Thus A$ above should be a single character string.
+
+   The program DEMO/MOUSE is a very simple program that shows
+the use of the MOUSE module.  It uses the HGR module to plot
+a house plan, places some "furniture" at the bottom of the
+screen and goes into an infinite loop.  You can use the mouse
+to move the furniture around.  Exit the program with control C.
+The program might just as well be continually looking for a
+key press and taking appropriate action.  (For example, it
+could place further objects on the screen corresponding to the
+key that is pressed.)
+.FF10
+   The mouse routines can be accessed from machine language
+programs through a jump table at relative byte $1E.  These
+can be accessed by a JSR to the address at relative byte:
+
+	$1E --- INIT
+	$21 --- INITA
+	$24 --- LETCHR
+	$27 --- ERASE
+	$2A --- STORE
+
+   These routines work as follow:
+
+INITInitializes the mouse (same as BASIC &INT)
+
+INITADoes INIT and sets the font table address
+	to that in the A,Y registers (hi,lo)
+
+LETCHRAssigns ascii character in A to the logical
+	number in X.  A should be in positive ascii and
+	X MUST be between 0 and $7F.  Logical number 0
+	is the cursor.
+
+ERASEErases the character with logical number
+	in the X register (<$80).
+
+STOREPlaces the character whose logical number is
+	in the X register on the screen at the position
+	held in the A and Y registers.  The A register
+	holds the X-coordinate in the 0-139 range and
+	Y holds the Y-coordinate 0-191.  The X register
+	(logical number) must be positive.
+
+   The WAIT functions can be done simply by the SEI and CLI
+instructions.
+
+   CAUTIONS:  There are no checks as to the correctness of
+the ranges for the registers for these machine language calls.
+You must be careful that the restrictions are obeyed or you
+may destroy the routines.  This is more dangerous with interrupt
+driven routines such as these than with more common machine
+language programming, so extra care is called for.
+
+   Interrupt driven routines can be dangerous if they are
+partially overwritten by accident.  These routines are written
+so that they make self checks and turn themselves off if
+trouble is detected.  For full safety, however, you should
+remember to issue the &END statement to turn off the routines
+when you are done with them; or simply hit Control-Reset.
+Interrupt routines such as those in the MOUSE module must not
+be used with versions of PRODOS prior to 1.1.1.  Those versions
+were not compatible with interrupts.
+.FF10
+
+THE RGB MODULE
+
+   This is a new module intended to be loaded AFTER the HGR or
+DHGR (or both) modules.  It intercepts some ampersand commands
+in order to manipulate the soft switches in the ways that are
+demanded my RGB cards.  It also adds a "mixed" RGB graphics
+command.
+
+   The commands that are intercepted are:
+
+&HGR and &HGR2 (these select color RGB mode and otherwise
+                act as they used to)
+&&HGR and &&HGR2 (select monochrome RGB mode, etc.)
+
+&HCOLOR (intercepted for technical reasons)
+
+   New commands are:
+
+&TEXT  (turns off double hires and selects 40 col text)
+
+&GR    (selects "mixed monochrome and color" RGB mode)
+
+&CLEAR (clears graphics screen irrespective of mode)
+
+----------
+
+USING THESE EXTENSIONS
+
+   It is vitally important that the RGB module be loaded
+AFTER the HGR module or the DHGR module (or both) or else the
+intercepted commands will be taken by the old routines
+instead of the new one.  The order of loading other modules
+such as FILL or PRINT makes no difference.
+
+   Some changes in programs, beyond the loading of the RGB
+module, will be necessary to make the best use of these
+additions.  Programs that use the shape drawing routines
+(in HGR) should turn on graphics mode using an &&HGR or &&HGR2
+command rather than the &HGR ones.  This is because these are
+basically monochrome routines.  Alternatively, the &GR command
+for mixed mode can be used.  The same applies to programs
+using the PRINT MODULE.
+
+   For similar reasons, programs using COLOR double hires
+should use &HGR or &HGR2, or &GR to turn on graphics mode.
+
+   Many programs are going to use both color and monochrome
+double hires.  For example, you may have colored pictures
+containing text from the PRINT module.  The latter probably
+will come out best in monochrome mode.  In these cases you
+should try using "mixed" mode.  That is, you should use the
+&GR command to turn on graphics mode and clear the screen.
+.FF10
+
+   In previous demo programs and documentation an ONERR GOTO
+was used in order to trap ^C and turn graphics mode off.
+The line it goes to usually read something like:
+
+	POKE 49164,0 : TEXT
+
+   You should replace such lines with an &TEXT command.  This
+will turn off double hires mode more reliably on RGB cards.
+
+   Assembly demos like SWISH are not going to be able to use
+the new module, but it is quite easy to put the correct soft
+switching into such programs when, like SWISH, you have the
+source code.  SWISH has been modified to do this.
+
+   Programs using both color graphics via HGR or FILL and fonts
+via PRINT may not come out very well in any mode.  This could
+well be the case with the "animation demo" because of the
+overstriking of a color background with a font character.
+
+===============================================================
+
+HLOAD and HSAVE
+
+   These are added ProDOS commands.  They are for loading and
+saving double high resolution screens.  In the case of saving,
+the file must already exist before the command is used.
+(CREATE the file.)
+
+   These commands accept either of the two file types BIN and
+$F7 and the operation of the commands depends on this type.
+
+   In case of the BIN file type the file is saved (and loaded)
+in the usual way.  That is, there is no file compression and
+expansion.  Such files will be 33 blocks long.  Some other double
+high resolution programs use this format.  Such files are $4000
+bytes long, with the first $2000 bytes consisting of the
+auxiliary memory part of the picture and the rest of the main
+memory part.
+
+   If the file type is $F7 then the double high resolution screen
+will be data compressed while saving and expanded while loading.
+This does not affect the content of the screen.  It saves disk
+space but takes a longer time to load and save.  Typical space
+saving is by a factor of 3 to 5.  Some very complicated and
+detailed drawings will not compress efficiently and may even
+take more disk space than the standard file's 33 blocks.
+In this case you should obviously use the BIN format instead.
+.FF
+
+   To create a file with type $F7 you should issue the command
+
+	CREATE MYFILE,T$F7.
+
+   The HLOAD and HSAVE commands turn on the double high
+resolution graphics screen when they are issued but return to
+the original state when the load or save is completed. Thus,
+if you want the graphics screen to remain in view upon completion
+of the loading, you should go into double hires graphics mode
+before giving the HLOAD command.
+
+   The program CONVGR is a very short and fast utility running
+on page 3 whose purpose is to convert a standard hires picture
+to double hires.  To use it just load the standard picture to the
+primary hires screen (A$2000) and BRUN CONVGR.  As with the HLOAD
+command, this will turn on the double hires screen and then revert
+to the entry condition when the processing is done (not long).
+You can then issue the HSAVE command to save the resulting double
+hires picture.  Remember that you must first CREATE the target
+file before using the HSAVE command.
+.FF
+
+SUMMARY OF DOUBLE HIRES COMMANDS
+
+HGR module:
+
+	&HGR				-init mixed screen
+	&HGR2				-init full screen
+	&HCOLOR= (0-15)			-set color
+	&HPLOT X,Y (TO X1,Y1 ...)	-plot
+	&PLOT  X,Y (TO X1,Y1 ...)	-xplot
+	&DRAW S (AT X,Y) 		-draw shape number S
+	&XDRAW S (AT X,Y)		-xdraw shape number S
+	HCOLOR= 0 or 4			-set black for &DRAW
+	HCOLOR= 3 or 7			-set white for &DRAW
+
+DHRG module:
+
+	&&HGR				-init mixed screen
+	&&HGR2				-init full screen
+	&&HPLOT X,Y (TO X1,Y1 ...)	-plot
+	&&PLOT  X,Y (TO X1,Y1 ...)	-xplot
+	HCOLOR= 0			-set black
+	HCOLOR= 7			-set white (default)
+
+FILL module:
+
+	&COLOR= (0-15)			-solid fill color
+	&FILL AT X,Y			-fill using last table
+	&FILL W AT X,Y			-fill using table at W
+
+PRINT module:
+
+	&PRINT W AT X,Y:string		-print using font at W
+	&PRINT AT X,Y:string		-print using last font
+	&PRINT:string			-print from last position
+	HCOLOR= (0-3)			-use EOR mode
+	HCOLOR= (4-5)			-erase background
+	HCOLOR= (6-7)			-overstrike
+
+MOUSE module:
+
+	&INT  or  &INT W		-initialize mouse routines
+	&LET N,A$			-assigns A$ to logical N
+	&STORE N AT X,Y			-puts object N on screen
+	&STORE N			-removes object N
+	&POS N,X,Y,S			-sets X,Y = posn of N, S=status
+	&WAIT 0				-interrupts on
+	&WAIT 1				-interrupts off
+	&END				-disconnect routines, mouse off
+
+RGB module:
+
+	&TEXT				-return to text mode
+	&GR				-mixed monochrome, color
+	&CLEAR				-clear screen, any mode
+.FF10
+
+   If you wish to use a mixed screen your program should issue
+the command
+
+	PRINT CHR$(4)"PR#3"
+
+prior to the &HGR command.  (Note that this does not work with
+the Ultraterm.  The FONT.EDIT program is the only supplied
+program that uses this mode.)
+
+   To exit cleanly to text mode from these routines, and if the
+PR#3 mode is not used, you should issue the command
+
+	POKE 49164,0:TEXT
+
+If PR#3 is in effect then TEXT alone is sufficient unless you
+want to return to 40 columns.
+
+CAUTION:  If PR#3 is not in effect and you issue TEXT without the
+POKE 49164,0 then your program may be overwritten and destroyed.
+
+   If you are using the RGB module (even without an RGB monitor)
+it is simpler to use the &TEXT command instead of this poke, to
+turn the double hires mode off.
+
+   The color table for the &HCOLOR and &COLOR commands:
+
+	 0 - black       	 8 - brown
+	 1 - magenta     	 9 - orange
+	 2 - dark blue   	10 - grey 2
+	 3 - violet      	11 - pink
+	 4 - dark green  	12 - light green
+	 5 - grey 1      	13 - yellow
+	 6 - medium blue 	14 - aquamarine
+	 7 - light blue  	15 - white
+.FF
+
+TECHNICAL INFORMATION
+
+   Each module occupies an even multiple of 256 bytes of
+memory and every effort has been made to keep the memory use
+to a minimum.  Also each module contains an ID byte that can be
+used by a program to determine if a certain module is in memory.
+The ID byte is at relative location $1D in the relocated module
+(Relative location $11D in the CMD file itself.)  The number of
+pages taken up by each module and the ID value is given in the
+following table:
+
+	SCI..........................1 page   ID = 53
+	RND..........................1 page   ID = 34
+	FORMAT.......................8 pages  ID = 33
+	RDLINE.......................4 pages  ID = 32
+	COMPARE and PASTE............5 pages  ID = 31
+	PATH.........................2 pages  ID = 30
+	SETINFO......................1 page   ID = 29
+	CMDS.........................2 pages  ID = 28
+	EJECT........................1 page   ID = 27
+	RGB..........................1 page   ID = 26
+	MOUSE........................6 pages  ID = 25
+	POP..........................1 page   ID = 24
+	ONEKEY.......................1 page   ID = 23
+	HEXDEC.......................1 page   ID = 22
+	CLOCK........................3 pages  ID = 21
+	HLOAD and HSAVE..............3 pages  ID = 20
+	PRINT........................2 pages  ID = 19
+	DHGR.........................2 pages  ID = 18
+	FILL.........................2 pages  ID = 17
+	FIND and FIND$...............2 pages  ID = 16
+	LYST.........................3 pages  ID = 15
+	HGR..........................3 pages  ID = 14
+	MACRO........................3 pages  ID = 13
+	EDIT and AUTO................6 pages  ID = 12
+	XREF.........................4 pages  ID = 11
+	RENUMBER, HOLD and MERGE.....6 pages  ID = 10
+	COPY.........................2 pages  ID =  9
+	USING........................2 pages  ID =  8
+	DATESTR......................2 pages  ID =  7
+	DATE.........................1 page   ID =  7
+	VARTRC.......................2 pages  ID =  6
+	VARLST.......................2 pages  ID =  5
+	SORT.........................4 pages  ID =  4
+	DUMP.........................2 pages  ID =  3
+	POINTERS and RESET...........1 page   ID =  2
+	TYPE.........................2 pages  ID =  1
+	ONLINE.......................1 page   ID =  0
+
+   Since the modules must be loaded to location $4000 for the
+relocation routine to work, they cannot be loaded by a large
+program that extends beyond that address.  The recommended
+way of dealing with this is to have a program similar to the
+COMMANDER program which would just load in the required
+modules and then RUN the main program.
+.FF10
+
+   When you load a module and do the CALL 4 * 4096, a check is
+done for the ID byte of the loaded module.  If this module is
+already installed then nothing will be changed.  This prevents
+multiple loading of the same modules and wasting of space.
+Here is a program segment that can be used by a BASIC program
+to search all modules for a particular ID byte:
+
+ 10 ID = ? :REM ID # of module desired
+ 20 FD = 0
+ 30 IF PEEK(116) = 150 THEN 100 : REM no modules loaded
+ 40 PT = 48646
+ 50 IF PEEK(PT+1) THEN 100 : REM no more modules
+ 60 PT = 256 * PEEK(PT+2) + 3
+ 70 IF PT > 39420 THEN 100 : REM not pointing at a module
+ 80 IF PEEK(PT + 26) <> ID THEN 50 : REM this is not it
+ 90 FD = 1 : REM found it
+100 IF NOT FD THEN PRINT CHR$(4)"BLOAD ???,TCMD,A$4000":CALL 4*4096
+
+   CAUTION:  Because of the way ProDOS does a "garbage collection"
+it is possible to have a module overwritten by the garbage
+collection during the request to ProDOS for buffer space. This
+is unlikely, but you can minimize the risk from a program by
+loading the modules you want before a lot of strings are defined.
+In immediate mode the risk can be avoided by always typing CLEAR
+or NEW before the BLOAD command.
+
+   When a module is loaded to $4000 and the CALL 4 * 4096 is done
+a check is made to see that the variable table has not been
+overwritten.  If it has been then the relocation will abort with
+a NO BUFFERS AVAILABLE error message.  This can be the source of
+some confusion, because it means that LOMEM cannot have been set
+to $4000 or above before this CALL.  Do the loading and relocation
+calls BEFORE you set LOMEM.  From the keyboard, if this error is
+encountered, just enter a dummy line (e.g.,  0 <RTN> assuming
+there is no line 0 in the current program) which will have the
+effect of resetting LOMEM, then issue the BLOAD and CALL commands.
+
+   These modules are designed to be compatible with other programs
+that locate themselves above the file buffers.  Such programs,
+however, MUST follow ProDOS conventions for this to work. (In
+particular, Apple's own APA program CANNOT be used, but why would
+you want to use it?)  Even this, of course, is no guarantee of
+compatibility with other utilities for ProDOS.  Also note that
+the RESET command will remove EVERYTHING above the file buffers,
+and not just these modules.  Other utilities may contain commands
+to remove things above the file buffers, but these should not
+be used in place of the RESET command because RESET does some
+other cleaning up of details relating to some of the commands.
+.FF10
+
+WRITING YOUR OWN MODULES
+
+   Three things are required to easily write modules compatible
+with the PROCMD package.  The user must be comfortable with
+assembly language and have a good knowledge of ProDOS.  The module
+should be written with the Merlin-pro assembler using the REL
+and DSK options (which will cause the object code to be written
+to disk as a LNK file (type $F8)).  Then you must BRUN the program
+RELOC on this disk (it must be done FROM Merlin-pro) and specify
+the name of the LNK file that was generated by the assembler.
+This will append a relocation header to the LNK file of exactly
+one page in length and will set up Merlin-pro's object code save
+pointers to save the resulting file as a CMD file.
+
+   The program itself must obey certain rules:  It must start with
+three jumps:
+
+	DOSENTRY JMP PARSE
+	DOSEXIT  JMP XRETURN  (= $BE9E)
+	AMPEXIT  JMP MONRTS   (= $FFCB)
+
+(These addresses will be modified by the relocation header.)  Also
+these jumps must be followed by the routine that parses "&" commands.
+The routine PARSE is the routine in your program which parses ProDOS
+external commands.  (If your program uses "&" commands only, then
+the first JMP can be JMP DOSEXIT.)  If you use ProDOS external
+commands then your "&" parser should print the command syntax
+if it is entered with Z-flag set (if EQ).
+.FF
+
+   In addition you must have the routine's ID number at relative
+location $1D.  An example of the beginning of such a file (with
+no "&" commands) is:
+
+	DOSENTRY JMP PARSE
+	DOSEXIT  JMP XRETURN
+	AMPEXIT  JMP MONRTS
+	AMPENTRY BNE AMPEXIT   ;Pass other & commands
+	         LDY #0
+	:LOOP    LDA CMDNAME,Y
+	         JSR COUT      ;Show added command syntax
+	         INY
+	         CPY #AMPEND-CMDNAME+1
+	         BLT :LOOP
+	         JSR CHRGOT    ;(=$B7) Retrieve A and status
+	         BEQ AMPEXIT   ;Always taken
+
+	         DFB ID        ;Your ID byte
+
+	CMDNAME  ASC "COMMAND"
+	CMDEND   ASC " its syntax"
+	AMPEND   HEX 8D
+
+	PARSE    ...
+
+Your "PARSE" routine must go to DOSEXIT with carry set if you do
+not accept the command.  (The command will be in the input buffer
+with high bit set.)
+
+   To help avoid duplication of ID numbers we have established
+the following rules governing them:
+
+1.  The ID number $FF is reserved for expansion beyond 255 routines.
+
+2.  The ID numbers $F0-$FE are to be used for "temporary" routines,
+    in anticipation of assigning a "real" ID number in the future.
+    These should be used for routines submitted to the publisher.
+
+3.  The ID numbers $E0-$EF are reserved for "personal" use. Use
+    these for your own routines that you don't expect to distribute
+    beyond a few friends.
+
+4.  No other ID number should be used unless you have it assigned
+    to your routine by the publisher.
+
+WARNING.  Running RELOC from Merlin-pro will delete any source
+file you have in memory.  Be sure you save it first!

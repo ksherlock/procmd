@@ -1,0 +1,1312 @@
+.pl59
+.pn-2
+.lm8
+.tl//ProCMD                                                          ^//
+.ul=
+.mo16
+
+
+
+
+
+
+
+
+
+
+
+
+
+		  *****************************************
+		  *                                       *
+		  *         PROCMD (THE COMMANDER)        *
+		  *                                       *
+		  *             USER'S MANUAL             *
+		  *                                       *
+		  *            Copyright  1988            *
+		  *                                       *
+		  *           by Glen E. Bredon           *
+		  *                                       *
+		  *          All rights reserved          *
+		  *                                       *
+		  *****************************************
+.su
+.FF
+
+
+
+                                DISCLAIMER
+
+
+           A.P.P.L.E. products are sold "as is".  A.P.P.L.E.
+           disclaims all warranties express or implied,
+           including but not limited to any implied warranty
+           of merchantibility or fitness for any particular
+           purpose or use.
+
+
+     APPLE COMPUTER INC. MAKES NO WARRANTIES, EITHER EXPRESS OR
+     IMPLIED, REGARDING THE ENCLOSED COMPUTER SOFTWARE PACKAGE, ITS
+     MERCHANTABILITY OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.  THE
+     EXCLUSION OF IMPLIED WARRANTIES IS NOT PERMITTED BY SOME STATES.
+     THE ABOVE EXCLUSION MAY NOT APPLY TO YOU.  THIS WARRANTY
+     PROVIDES YOU WITH SPECIFIC LEGAL RIGHTS.  THERE MAY BE OTHER
+     RIGHTS THAT YOU MAY HAVE WHICH VARY FROM STATE TO STATE.
+
+     "Apple" is a registered trademark of Apple Computer Inc.
+.su
+.FF
+	 PROCMD (THE COMMANDER) by Glen E. Bredon
+
+	Programs (partial list)
+
+	   STARTUP...............................1
+	   COMMANDER.............................2
+	   FITR..................................3
+	   DEMO/SORT............................13
+	   MACRO.EDIT...........................22
+	   FONT.EDIT............................40
+	   DEMO/ANIMATION.......................40
+
+	Commands
+
+	   POINTERS and RESET....................4
+	   ONLINE................................4
+	   DATE and DATESTR......................5
+	   USING.................................6
+	   VARLST................................8
+	   VARTRC................................8
+	   TYPE..................................9
+	   DUMP..................................9
+	   SORT.................................10
+	   COPY.................................14
+	   RENUMBER, HOLD and MERGE.............15
+	   XREF and XREF#.......................17
+	   FIND and FIND$.......................18
+	   FORMAT...............................19
+	   EDIT and AUTO........................20
+	   MACRO................................22
+	   The MACRO.2 module...................23
+	   LYST.................................24
+	   RND..................................24
+	   SCI..................................25
+	   RDLINE...............................25
+	   CLOCK................................27
+	   ONEKEY...............................28
+	   HEXDEC...............................28
+	   POP..................................29
+	   EJECT................................29
+	   CMDS.................................30
+	   SETINFO..............................32
+	   PATH.................................32
+	   COMPARE and PASTE ...................33
+
+	   HGR  (color double hires graphics)...34
+	   DHGR (B&W double hires graphics).....37
+	   FILL (double hires color fill).......38
+	   PRINT (double hires char generator)..39
+	   MOUSE (double hires mouse routines)..41
+	   RGB..................................43
+	   HLOAD and HSAVE (and CONVGR).........44
+
+	   Summary of double hires commands.....46
+
+	   Technical information................48
+	   Writing your own modules.............50
+.FF10
+
+
+INTRODUCTION
+
+   The PROCMD disk contains a number of utility programs which are
+designed as "modules" appended to the ProDOS BASIC interpreter.  You
+can add some or all of the modules to memory.  This sets up new
+ProDOS commands which can be typed from the keyboard or invoked from
+a program.  For example, there is a TYPE command which will display
+a text file, say MYTEXT, by simply issuing the command
+
+	TYPE MYTEXT
+
+from the keyboard.  From a program, the syntax would be
+
+	PRINT CHR$(4)"TYPE MYTEXT"
+
+   Furthermore, you can review all the presently active commands
+simply by typing "&".
+
+   By having these utilities in separate modules, you can load in
+only those which are of use to you at the moment and do not have
+to sacrifice valuable memory space to unwanted material.
+
+   The easiest way to load modules is to use the STARTUP program
+or a variant of the COMMANDER program.  However one can load a
+module, say the COPY module, from the keyboard simply by typing
+
+	CLEAR  (or NEW)
+	BLOAD COMMANDS/COPY,TCMD,A$4000
+	CALL 4*4096
+
+   The first of these clears out variables to help ensure that
+the BLOAD command will not overwrite memory in use, the second
+loads the command module into memory, and the third executes a
+relocation routine which moves the module to its final destination
+and links it to any other modules already loaded.
+
+==================================================================
+
+THE STARTUP PROGRAM
+
+   The STARTUP program is a menu driven program which will allow
+you to load some or all of the added commands supplied on the
+disk.  It will also show you a list of command syntaxes for the
+loaded commands.
+
+   Hard disk users will need to change the prefix designation in
+line 30 of STARTUP.
+
+==================================================================
+.FF10
+
+THE COMMANDER PROGRAM
+
+   The COMMANDER program is a short BASIC program that loads in
+a selected list of the ProDOS command modules.  The names of the
+modules are in the DATA statements.  You can delete some of these
+data lines or add some if you want a different list of modules.
+You can also rename COMMANDER and have several such loaders.
+
+   After running the COMMANDER program, the & <RTN> command
+will list all the active ProDOS external commands that are now
+available and indicates the syntax to be used with them.
+Brackets indicate optional syntax.  Examples of the commands are
+
+POP [#] (levels of prefix)
+One key commands: ARLEM
+D <dec #> or H<hex #>
+HSAVE or HLOAD pathname
+MACRO
+EDIT [start,end]["str"][,"repl"]
+AUTO [start,incr]
+FIND string,pathname[,A offset]
+FIND$ hex string,pathname[,A offset]
+LYST [header,E ln/pg,L chrs/ln,@ marg]
+XREF[#][header,E ln/pg,L chars/ln]
+RENUMBER [Start #,Incr #,First #,Last #]
+HOLD
+MERGE
+COPY source pathname, dest pathname
+"USING [^fill][+][$]#,###.##":formula
+DATE
+VARTRC formula
+VARLST
+"SORT":A[$%](0,-),I%(0),start,end[,1]
+DUMP ,A(start),E(end)[,L(#bytes)]
+DUMP pathname [,L(#bytes/line dflt=16)]
+TYPE pathname [,E ln/pg,L ch/ln,@ skip]
+POINTERS
+RESET
+ONLINE
+
+   The double hires modules provide some additional "&" commands.
+
+   Unlike the STARTUP program, COMMANDER is designed to be used
+on your own disk to load certain files that you may want loaded
+on bootup.  For example, if you have a disk called MYDISK which
+contains PRODOS and BASIC.SYSTEM, and if you want your STARTUP
+program to load the commands POINTERS, TYPE and SORT, then, using
+the PROCMD STARTUP program to load the COPY command, you can
+execute the commands:
+
+	COPY /PROCMD/COMMANDER,/MYDISK/STARTUP
+	COPY /PROCMD/COMMANDS/POINTERS,/MYDISK/POINTERS
+	COPY /PROCMD/COMMANDS/TYPE,/MYDISK/TYPE
+	COPY /PROCMD/COMMANDS/SORT,/MYDISK/SORT
+.FF10
+
+Then change the STARTUP program on your disk to contain only
+the DATA statements for these commands and delete the "COMMANDS"
+subdirectory from the line that does the loading.  Further
+changes, such as causing your STARTUP program to then RUN another
+program, are easy to make.
+
+==================================================================
+
+THE "FITR" PROGRAM
+
+   FITR is a file handling utility built around the COPY command.
+It provides for batch copying, locking, unlocking, and deleting
+of selected files.  It should be remembered that, for copying,
+FITR shares the strengths and weaknesses of the COPY command,
+namely that it will not mess up dates, but will not handle
+"sparse" files.  (Actually, it will work on sparse files but the
+copy will not be "sparse".)
+
+   Use the arrow keys until the desired option is highlighted and
+then press RETURN.  You will be asked to specify a prefix and you
+should type the full pathname of the DIRECTORY you wish to access.
+If this is not the first option you have chosen then the last
+prefix selected will be shown as the default and you can just hit
+RETURN to accept it.  (You do not have to copy over the name.)
+If the selected option is COPY FILES then you are asked for a
+destination prefix as well.  (This must differ from the source
+prefix.  To copy to a disk with the same name, rename it before
+using FITR or copy to /RAM and then to the other disk.)
+
+   Next the specified directories will be read from disk, and
+the filenames shown on the screen.  Only those files appropriate
+to the command are shown.  (Thus, for the COPY and DELETE options,
+directory files are not shown.)
+
+   Use the arrow keys to highlight the files you wish to have
+processed and press the space bar to select or deselect that file.
+When done press RETURN and the selected files will be processed.
+(Selected files are marked with an arrow.)
+
+   In the case of the COPY option, if the file you wish to copy is
+already on the destination directory then you will be asked if you
+really want it overwritten.  If so and if it is locked, you will
+be asked if you want to go ahead anyway.
+.FF
+
+==================================================================
+Detailed descriptions of the commands presently supplied follow.
+==================================================================
+
+POINTERS and RESET
+
+   These two commands are in the same file.  Since the RESET
+command is very handy it is suggested that you always include
+this file.
+
+   The POINTERS command prints out the values in hexadecimal of
+the following seven Applesoft pointers:
+
+   TXTTAB = start of current BASIC program.
+   VARTAB = start of variable storage (LOMEM).
+   ARYTAB = start of array variables.
+   STREND = start of free space (space available to strings).
+   FRETOP = end of free space (bottom of current string storage).
+   MEMTOP = top of string storage (HIMEM).
+   PRGEND = address of end of BASIC program.
+
+   The RESET command removes all external ProDOS commands from
+memory and resets the memory protection bit map, reclaiming the
+space for BASIC.  This command may be needed if you find the
+modules use too much space for a particular program to run.
+
+==================================================================
+
+ONLINE
+
+   This command looks at all online drives and prints the names
+of all volumes found.
+
+==================================================================
+.FF
+
+DATE
+
+   This command causes the ProDOS date and time to be printed.
+In order to be able to use this to print at any position on
+the screen or printer, no carriage return is done before or
+after the date is printed.  In immediate mode it helps to type
+a space after the DATE command, since the date will be printed
+on the same line.
+
+==================================================================
+
+THE DATESTR MODULE
+
+   This module contains an alternative version of the DATE module.
+This version has the same ID as the older DATE so only one of
+them can be used at one time.  It is a little more versatile
+but uses 2 memory pages instead of 1.  It returns the date in
+a string instead of just printing it.  However, it can only be
+used in a program and not in immediate mode.
+
+   There are three choices of syntax to use with the command:
+
+	10 PRINT CHR$(4)"DATE$":DT$
+
+returns the date in DT$ in the form   12-Feb-86 14:05
+for example.  I.e., in 24 hour format.
+
+	10 PRINT CHR$(4)"DATE#":DT$
+
+returns it in the form   12-Feb-86  2:05 PM   for example.
+In addition to these,
+
+	10 PRINT CHR$(4)"DATE%":DT$
+
+returns the day of the week in ascii (eg., Wednesday).
+
+============================================================
+.FF
+
+USING
+
+   This is a PRINT USING facility and can be used only inside a
+program.  The command
+
+	PRINT CHR$(4)"USING #,###,###.##":V
+
+will print the variable V inside the template #,###,###.## where
+the "#" characters stand for digit positions.  If, for example,
+V has value 1234.56 then this command will print the string
+
+     1,234.56
+
+As shown, leading zeros are suppressed and the number is right
+justified.  Similarly, the command
+
+	PRINT CHR$(4)"USING ###/###":A
+
+with A=12345 will print the string
+
+  12/345
+
+   If the format string begins with the character "^" then the
+next character is used to fill (instead of using spaces). Thus
+
+	PRINT CHR$(4)"USING ^.#,###,###.##":V
+
+where V is 1234.56 will print the string
+
+.....1,234.56
+
+   If (after the [^fill char] if any) the format string has a "+"
+then the printed string will start with "+" or "-" corresponding
+to the sign of the number.  (This sign is justified left.)
+For example, the command
+
+	PRINT CHR(4)"USING +##,###.##":V
+
+for V = 1234.56, -1234.56, 12.34, -12.34, will print the strings
+
++ 1,234.56
+- 1,234.56
++    12.34
+-    12.34
+.FF
+
+   If (after these if any) the format string has a "$" then the
+printed string will have a "$" sign appended to its start. This
+character is floated with the string, that is, it is printed
+just prior to the actual number.  Thus the command
+
+	PRINT CHR$(4)"USING $##,###.##":V
+
+where V is 12.34 will print as
+
+     $12.34
+
+   If the "+" option is not in effect then a negative number will
+be printed with a floating minus sign.  All printed strings reserve
+space for this sign whether or not it is actually used. Thus
+
+	PRINT CHR$(4)"USING ###.##":V
+
+for V = 123.45, -123.45, -12.34, will print as
+
+ 123.45
+-123.45
+ -12.34
+
+   In order to ensure full utility, the routine does not do a
+carriage return before or after printing the formatted string.
+For example, the command
+
+	PRINT ".............";:PRINT CHR$(4)"USING ^.######":V
+
+with  V=123  will print the string
+
+.................123
+
+   String variables, such as F$, can be used to specify the format
+string via the syntax
+
+	PRINT CHR$(4)"USING";F$:V
+
+   If the format string does not contain enough space (to the left
+of the decimal point) for the number, the number will be printed
+in its Applesoft format.
+
+   Unlike some, this PRINT USING routine is not limited to 9 digits,
+but you must realize that only 9-10 digits will be significant.  Thus
+
+PRINT CHR$(4)"USING .###,###,###,###":1/3   yields 0.333,333,333,500
+PRINT CHR$(4)"USING .###,###,###,###":1/300 yields 0.003,333,333,333
+PRINT CHR$(4)"USING ###,###,###.##":1E9/9   yields 111,111,111.16
+.FF10
+
+VARLST
+
+   This command prints a list of all active variables. (This
+looks at the actual variable table - it is not a "cross
+reference" type utility.)  Use it after running a program to see
+what variables were used by the program.  You can also use the
+ProDOS RESTORE command to load a variable table previously saved
+with the STORE command and use VARLST to see what that table
+contains.  Do a PR#1 first if you want the list sent to a
+printer.
+
+   The list gives the values of all simple (non-array) variables
+including strings.  For array variables the list gives the
+dimensions of the array but does not print out the entries of
+the array.  (This is trivial to do once you know the dimensions
+of the array.)  For a FN variable (defined by a BASIC DEF FN
+statement) the dummy variable used in the definition will be
+shown, as in F(X).  If the table has been loaded by RESTORE then
+such FN variables are usually invalid and should not be used.
+This will be indicated by showing the FN variable in the form
+F().
+
+==================================================================
+
+VARTRC
+
+   This is a debugging utility.  The command VARTRC by itself
+turns off the VARTRC mode.  (The RESET command also does this.)
+The command
+
+	VARTRC variable
+
+(e.g., VARTRC I)  will set up trace mode for the indicated
+variable.  If you then run any BASIC program, the indicated
+variable will be continuously evaluated and displayed at the top
+of the screen.  (This works only in TEXT mode.)  This is totally
+transparent to the program, unless the program reads directly
+from the top line of the screen, and except for the slowing of
+the program due to the overhead involved.
+
+   You can trace not only variables but any valid Applesoft
+expression of at most 28 characters (in tokenized form). For
+example, you may wish to see if a certain variable I is always
+less than another variable J.  Just type VARTRC I<J and the
+value of this logical expression will be continuously displayed
+at the top of the screen during program execution.  You may also
+trace values of string variables such as VARTRC A$.  In this
+case the string will be truncated to 40 characters.
+
+   Remember to type VARTRC <RTN> when you are through using this
+utility.
+
+   Properly used, the VARTRC command can be very useful in
+tracking down obscure bugs in an Applesoft program.
+.FF10
+TYPE
+
+   The command
+
+	TYPE pathname
+
+will type out the TXT file given by the pathname.  The file is
+printed verbatim with no formatting.
+
+   The command
+
+	TYPE pathname,E60,L80
+
+will print out the file with pagination and page headers. The
+number of lines per page is given by the E parameter.  The L
+parameter gives the number of characters per line and is optional
+with 80 as default.  (It is assumed that the printer will do its
+own carriage return at the end of this many characters and that
+it recognizes form feeds.)  In this mode the tab character
+(control I) will be supported to tab to the nearest column which
+is a multiple of 8.  The @ parameter gives the number of lines
+to skip at a carriage return (0=single space, 1=double space,
+etc.) and defaults to 0 (single space).
+
+   The space bar can be used to make the listing pause and the
+control C key will abort reading of the file.
+
+==================================================================
+
+DUMP
+
+   This is a hex/ascii dump utility.  It has two modes: memory
+dump and file dump.  The memory dump is accessed by the typical
+command syntax
+
+	DUMP ,A$1000,E$2000
+
+Note the comma after the DUMP.  This is required.  This command
+will cause the contents of memory from $1000 to $2000 to be
+dumped with 16 hex bytes displayed per line followed by the
+corresponding ASCII conversion.  This is appropriate for use
+with 80 column display.  A length parameter (,L8 for example)
+can be appended to limit or expand the dump to the specified
+number of bytes per line.  L8 is appropriate for the 40 column
+screen.
+
+   The file dump can be used on any ProDOS file including
+directory files.  The typical syntax for this is
+
+	DUMP /MYVOL/MYFILE
+
+This will cause the specified file to be read and dumped to the
+screen (or printer if enabled).  Again a length parameter can be
+appended to the command to specify the number of bytes per line
+to be dumped.  The default is 16 bytes per line.
+.FF10
+
+SORT
+
+   This is one of the most versatile sort routines available
+for the Apple // series.  Its features are:
+
+1.  It is very fast, based on the "Quicksort" algorithm.
+2.  It will sort a string array alphabetically or numerically.
+3.  It will sort string arrays, real arrays or integer arrays.
+4.  It handles multidimensional arrays, sorting on any field.
+5.  It sorts multiple arrays (sorting one, others kept in line).
+6.  It will sort any range of an array.
+7.  String sorting is not case sensitive.
+8.  Empty string records are moved to the bottom.
+
+   The array itself is not altered.  Instead the sort is done on
+an associated "index" array.  It is this that makes points (4)
+and (5) possible without extra overhead.
+
+USING SORT
+
+   The SORT command is an added ProDOS command that can only be
+used from a BASIC program.  The syntax of the command is
+
+	PRINT CHR$(4)"SORT":A$(0,X),I%(0),F,L
+
+Here, the array to be sorted is A$ (a two dimensional array in
+this example).  I% is the associated index array (the array that
+is actually rearranged).  F is the first record in the range to
+sort and L is the last.  X is the field you wish to sort. (If
+A$ has only one dimension, omit the ",X".  If it has more
+dimensions, X specifies all of them.)
+
+   For example, if you wish to sort the three dimensional
+integer array A%(x,y,z)  for  x  between  5  and  100  by the
+field  y=2  and  z=9 you issue the command
+
+	PRINT CHR$(4)"SORT":A%(0,2,9),I%(0),5,100
+
+---------------------------------------------------------------
+CAUTION:  The first 0 in A% and in I% is required, but the
+program does not check for it.  Do not try substituting other
+numbers for this first dimension.
+---------------------------------------------------------------
+
+SORTING A STRING ARRAY NUMERICALLY
+
+   Numerical sorting of a string array is much slower than
+alphabetical sorting, and should be avoided if another sorting
+mode can be used to obtain the same results.  This is because of
+the overhead required in converting a string to its numerical
+value, a comparatively slow process.
+
+   To sort a string array numerically, just append ",1" (or ",V"
+where V is a variable whose value is 1) to the sort command, for
+example:
+.FF10
+
+		PRINT CHR$(4)"SORT":A$(0),I%(0),0,100,1
+
+You can also append this last parameter, with value other than
+1, for an alphabetical sort (it is just ignored).  This makes it
+possible to use the same type of syntax for the two varieties of
+sorts.
+
+---------------------------------------------------------------
+
+SORTING ON PARTICULAR FIELDS
+
+   In the case of a two dimensional array, for example, say
+A$(x,y), the second dimension y should be thought of as
+specifying a "field".  Thus the first field consists of A$(0,0),
+A$(1,0), A$(2,0),... , the second field consists of
+A$(0,1),A$(1,1),A$(2,1),... , the third field consists of
+A$(0,2),A$(1,2),A$(2,2),... and so on.  Thus the first dimension
+of the array is the index to each field and this is what is
+sorted.
+
+---------------------------------------------------------------
+
+LISTING A SORTED ARRAY
+
+   If the array A$(x) has been sorted using the indexing array
+I%(x) say by the command
+
+	PRINT CHR$(4)"SORT":A$(0),I%(0),0,S
+
+then the array can be listed in sorted order by the program
+segment:
+
+	100 FOR X=0 TO S
+	110 PRINT A$(I%(X))
+	120 NEXT X
+
+---------------------------------------------------------------
+
+DIMENSIONING THE ARRAYS
+
+   The index array I% must be dimensioned the same as the first
+dimension of the array to be sorted, or at least to the top of
+the range to be sorted.  For example, if the array to be sorted
+is A$(x,y) and the index array is I%(x) and the first dimension
+of A$ is to be 1000, and the second is to be 2 then use the
+dimensioning statement
+
+	10 DIM A$(1000,2),I%(1000)
+
+in your program.
+.FF10
+
+INITIALIZING THE INDEXING ARRAY
+
+   You do not have to initialize the indexing array.  The
+routine looks at the first two elements (I%(0) and I%(1)) of the
+indexing array and if both of these are zero the routine
+initializes the entire array very quickly.  Obviously, if you
+wish to force this initialization you can just set the first two
+elements to zero.  This must be done if there is a chance that
+the array does not consist of the integers 0,1,2,3,4... in some
+order (the order is immaterial) and one of the first two
+elements is nonzero.  (If the array is not used for any purpose
+other than sorting, initialization should never be needed.)
+
+---------------------------------------------------------------
+
+SECONDARY SORTING
+
+   The reason that the routine does not initialize the array
+when this has previously been done is that this allows secondary
+sorting on a field (or another array) for some range in an
+already sorted array.  For example suppose you have a list of
+1000 names in the array A$(x,y) and that the first field A$(x,0)
+consists of the last names and the second field A$(x,1) has the
+first names.  Suppose you sort by the last names with
+
+	PRINT CHR$(4)"SORT":A$(0,0),I%(0),0,1000
+
+Suppose you then check through the sorted records and find that
+numbers 5 through 13 have the same last name.  You can do a
+secondary sort of these by the first name by issuing the command
+
+	PRINT CHR$(4)"SORT":A$(0,1),I%(0),5,13
+
+Lines 570-630 of the DEMO/SORT program illustrate this technique.
+
+---------------------------------------------------------------
+
+SORTING MULTIPLE ARRAYS
+
+   Because of the indexing feature, sorting of multiple arrays
+is easy.  Suppose array L$(x) is an array of last names and
+F$(x) is an array of the associated first names.  To sort
+records 1 to 500 by last name just issue the command
+
+	PRINT CHR$(4)"SORT":L$(0),I%(0),1,500
+
+Then the program segment
+
+	100 FOR X = 1 TO 500
+	110 PRINT L$(I%(X));", ";F$(I%(X))
+	120 NEXT X
+
+will list the records sorted by last name.  If desired, a
+secondary sort can be done on the first names for ranges where
+the last names are the same.
+.FF10
+
+ARRAY NAMES
+
+   Our examples have all used I% as the name of the indexing
+array.  This is not necessary, as any name will do.  The
+indexing array must, however, be an INTEGER array. Similarly
+there is no restriction on the names of arrays to be sorted.
+
+---------------------------------------------------------------
+
+ABORTING A SORT
+
+   You should never use the RESET key to abort a sort in
+progress.  This will leave some Applesoft parameters in zero
+page altered.  The sort routine looks for the control C key
+periodically and will terminate cleanly if that key is pressed.
+If the reset key is accidently pressed, issuing the commands
+
+	NORMAL
+	NOTRACE
+	SPEED=255
+
+should set things right.  If you LIST your program before
+issuing the NORMAL command it will probably look like garbage,
+but it has not been damaged.
+
+---------------------------------------------------------------
+
+THE DEMO/SORT PROGRAM
+
+   This program illustrates most of the capabilities of the sort
+routine.  In particular it does a sort of a two dimensional
+string array with 4 fields, sorting on each field.  One field is
+sorted numerically.  There is also an associated real array and
+an associated integer array.  The integer array (called SCORE)
+is sorted together with a secondary sort by last name (the first
+field of the string array).
+
+   Line 50 gives the common size S of the first dimension of all
+these arrays.  S is set to 17 so that the entire scheme can be
+seen on the 80-column screen at one time.  If you put S=500 in
+line 50 you can check the performance on a very large set of
+arrays, just about filling memory.  Your programs are very
+unlikely to have data of this size and so you can expect the
+sorting to be much faster in typical real applications. Even on
+this very large set of arrays the sort is accomplished in a
+matter of seconds.
+.FF10
+
+COPY
+
+   The command
+
+	COPY PATHNAME1,PATHNAME2
+
+will copy the file PATHNAME1 to the file PATHNAME2 (usually on
+another disk).  The second file will be overwritten if it already
+exists, unless it is locked.
+
+   This utility was written for two reasons.  First, it is much
+more convenient than going to the FILER and back and it does
+not destroy whatever program you may have in memory. Second,
+it is a LITERAL copy, unlike FILER and similar programs, in that
+it retains the creation date and the modification date from the
+original file.
+
+   It will not work on "sparse" files or directory files.
+(Create the destination directory first and copy the files from
+the source directory to it.)
+
+   The COPY routine uses the free space between the variable
+table and the strings.  Thus it will be most efficient if this
+space is as large as possible.  Do a CLEAR before a COPY, or,
+if you don't need to keep the current program in memory, do a
+NEW.
+
+   Since drive parameters are not accepted by the command, the
+volumes involved MUST have different names.   To copy between
+disks having the same name, you can rename one of the volumes,
+do the copy, then rename it back again.  Alternatively you could
+COPY the file to the /RAM volume, change disks, and COPY it back
+to disk (assuming an Apple //c or 128k //e).
+.FF
+
+RENUMBER
+
+  The RENUMBER command accepts the four parameters S,I,F,L in any
+order.  They are all optional with the defaults:
+
+	S10,I10,F0,L65535
+
+The meaning of these parameters is:
+
+	S = the starting line number for the renumbered program.
+	I = the increment from one line to the next.
+	F = first line number in range to be renumbered.
+	L = last line number in range to be renumbered.
+
+   Thus the command
+
+	RENUMBER S100,I50,F2000,L2999
+
+will renumber the range 2000-2999 starting with the new line
+number 100 and increasing by 50 for each line renumbered.
+
+   You do not have to type the parameter letters S,I,F,L but
+in this case the parameters must be given in the indicated
+order.  If the letters are typed, the parameters can be given
+in any order.
+
+   This renumber routine will allow numbering above the usual
+limit of 63999.  This enables creation of REM banners that
+are difficult to remove by others, but you must realize that
+GOSUBS and GOTOS are illegal into such a line.  For example, if
+you write lines such as
+
+	10 REM ******************
+	20 REM *                *
+	30 REM * COPYRIGHT 1985 *
+	40 REM *                *
+	50 REM ******************
+
+and then issue the command  RENUMBER S65531,I1  the result will be
+
+	65531 REM ******************
+	65532 REM *                *
+	65533 REM * COPYRIGHT 1985 *
+	65534 REM *                *
+	65535 REM ******************
+
+These lines cannot be casually removed or changed by users.
+
+   This renumber facility will handle programs that just
+about fill up memory.  Many renumber programs do not correctly
+handle some rare instructions that admit line numbers, such as
+the commands LIST, DEL and RUN.  This renumber facility even
+takes care of such esoteric syntaxes as LIST 10-20.
+.FF10
+
+   If a referenced line does not exist in the program RENUMBER
+will use the next line that does exist.
+
+   Several error messages can be generated by the program. The
+OVERFLOW message means that some new line number would exceed
+the maximum of 65535.  The LINE # CONFLICT message means that
+some new line number would equal an existing (not changed) one,
+or that intermixed line numbers would be caused by renumbering.
+The OUT OF MEMORY message means that the size of the program is
+too great to handle.  (This is very unlikely, since RENUMBER
+requires very little space to function.)  The PROGRAM INVALID
+message means either that some defect was found in the program
+or that renumbering caused a line to exceed the one page limit.
+The last two possibilities are very rare.
+
+==================================================================
+
+HOLD    (in the RENUMBER file)
+
+   This command puts the current program "on hold".  This works
+by moving the program pointer TXTTAB above the program.  If the
+POINTERS command is active, you can use it to tell whether or
+not there is a HOLD file in use.  (Ordinarily, TXTTAB = $801.)
+If you issue the HOLD command while another hold file is in use,
+the present program will be merged with the program on hold and
+the result placed on hold.  This is done only if one of these
+programs has line numbers completely above the other.  If not,
+you get "LINE # CONFLICT", "OK?" messages and can hit the "Y"
+key to force the merging into the hold file.
+
+==================================================================
+
+MERGE   (in the RENUMBER file)
+
+   This command merges the hold file, if any, into the present
+program.  As with HOLD, intermixing of line numbers will not
+be done unless you request it.  If they have line numbers in
+common, they will both be in the merged file with the same
+line number.  They can be separated with a RENUMBER command.
+
+   Since there is some sorting of program lines which must be
+done with a merge command, it may take noticable time for the
+command to be acted upon.
+
+IMPORTANT:  DO NOT use reset when the RENUMBER, HOLD or MERGE
+commands are being processed!  Doing so will destroy the program!
+.FF
+
+XREF
+
+   The XREF command will print a cross reference list of the
+Applesoft program in memory.  It accepts an E parameter for
+the number of lines per page.  This option is intended for use
+when sending the XREF listing to a printer.
+
+   XREF also accepts an L parameter which specifies the number
+of characters per line.  It defaults to 80.  For the 40 column
+screen use
+
+	XREF,L40
+
+   Thus to send the listing to the printer in slot 1 issue the
+commands:
+
+	PR#1
+	XREF,E60
+
+   The list is alphabetized.  Each one or two character variable
+name actually can define seven different types of variables,
+real, string, integer, function, real array, string array, and
+integer array.  The listing will follow this order.  For a
+function definition (DEF FN A(X) for example) the function
+variable will be shown as  A[.  Thus, all possibilities for
+the name A would be:
+
+	A
+	A$
+	A%
+	A[
+	A(
+	A$(
+	A%(
+
+   Variable references in which the variable is defined or
+modified are indicated by an asterisk on the line number.
+These will include equates, DIM, DEF FN, READ, INPUT, and GET
+statements as well as simple equates.
+
+   The command  XREF#  will do a line number cross reference of
+the current program.  Here the listing will consist of the line
+numbers referenced followed by a ":" or "?" and the lines which
+reference it.  The "?" means that the line does not exist in
+the program.  References with "s" appended are subroutine calls.
+
+   With both modes of XREF you can specify a page header as in
+
+	XREF# MYPROGRAM,E60
+
+Remember that this will not be used if the E parameter is missing.
+
+   The space bar can be used to stop and step the display and
+the control C key will abort the cross reference process.
+.FF10
+
+FIND
+
+   This command is designed to search disk files of any type for
+a specified string (either a character string or a hex string).
+To search the file MYFILE for the string STRING, just issue the
+command
+
+	FIND STRING,MYFILE
+
+   The space after the word FIND is required and the search string
+starts right after it.  Thus if you type two spaces after FIND the
+search string will start with a space.  Similarly, the comma must
+come directly after the desired search string.
+
+   For example, you might try the command
+
+	FIND HUSTON,????
+
+where ???? stands for any directory file.
+
+   The search is not case sensitive and you can use the character
+"^" as a wild card.  Thus the command
+
+	FIND G^SH,MYFILE
+
+will find  GOSH, GISH, gush, and Gash.
+
+   The offset in the file where the string is found will be
+printed in three byte hex format, followed by the string actually
+found.
+
+   To search for a grouping of hex bytes, say 20 ED FD (which is
+a JSR COUT), use the command syntax
+
+	FIND$20 ED FD,MYFILE
+
+   Here the spaces are optional but there must not be a space
+just preceding the comma.  The output in this mode will consist
+of the three byte offsets only.
+
+   If you include an A parameter then the specified address will
+be added to the file offset for the purpose of printing out the
+results.  For example if you want to search a binary file whose
+load address is $2000 for the hex string 4C 00 E0 and you issue
+the command
+
+	FIND$ 4C 00 E0,MYFILE,A$2000
+
+then the actual "load" addresses of the found strings will be
+displayed.
+.FF10
+
+   In a program, the correct syntax of this command is
+
+	PRINT CHR$(4)"FIND STRING,MYFILE"
+
+or
+
+	PRINT CHR$(4)"FIND STRING,";F$
+
+where F$ has the pathname, or
+
+	PRINT CHR$(4)"FIND ";S$;",";F$
+
+where S$ is the search string and F$ is the pathname, etc.
+
+   As with other modules, pressing the space bar will stop the
+listing until another key is hit.  Repeated pressing of the
+space bar will step the listing.  Pressing the control C key
+will abort the file reading process.
+
+
+==================================================================
+
+FORMAT
+
+  The FORMAT command will format floppy disk or 3.5" disks.
+Its syntax is
+
+	FORMAT volume.name, S#,D#
+
+The slot and drive parameters are optional and default to 6,1.
+This command takes effect as soon as it is issued.  It does not
+print any messages to the screen because that might interfere with
+the display of programs using the command.  Standard error messages
+No device connected, Write protected, and I/O error (for everything
+else) can result and can be handled by the usual ONERR error
+handling of Applesoft.
+.FF
+
+EDIT and AUTO
+
+  The EDIT command provides a full global Applesoft BASIC
+program editor.  Although it has the power of other utilities
+of this nature, it lives in only 1.5K of memory.  The EDIT
+command by itself presents the entire range of the program,
+a line at a time, for editing.  The command
+
+	EDIT 100,1000
+
+does the same with the range 100 through 1000.  Similarly,
+
+	EDIT 100
+
+presents only line 100 for editing.  The command
+
+	EDIT "STRING"   (or EDIT 100,1000"STRING" etc.)
+
+will present only those lines containing STRING.  When a
+string is specified and only a line number is given,
+instead of a range, this is treated as the range from
+that line to the end of the program.
+
+   The command characters while editing a line are these:
+
+	^I  (enter insert mode at the cursor)
+	^F  (find character typed after the command)
+	DELETE key (delete character preceding cursor)
+	^D  (delete character under cursor)
+	RETURN key (accept entire line as it now appears)
+	Right and left arrow keys (move cursor)
+	^B  (move cursor to beginning of line)
+	^N  (move cursor to end of line)
+	^X  (cancel entire edit process, current line unchanged)
+	^C  (same as ^X for people with poor memories)
+	^Q  (terminate line at the cursor)
+	^Z  (delete from the cursor to next character typed)
+	^R  (retrieve original form of line)
+	^O  (insert character typed after command - used to
+	     insert control characters)
+	^P  (packs the line, removing excess spaces)
+	^W  (move cursor to next space [WORD])
+	^S  (move cursor to next colon [STATEMENT])
+	^L  (changes case of character under cursor)
+
+   The edit command can also be used to do a global change
+of one string to another.  Thus the command
+
+	EDIT "BAD","GOOD"
+
+will present all lines containing the string  BAD  and will
+show the replacement  GOOD  in inverse video.  It then waits
+until you type a "Y", "N" or "^X" key.  (The latter cancels
+the entire process.)  Next, the line is displayed again with
+the change, if any, made.  Then the process continues with
+the next occurrence of  BAD, possibly on the same line.
+.FF10
+
+You can also use a range with this command, as in
+
+	EDIT 100,2000"BAD","GOOD"
+
+   Any character can be used as a string delimiter instead
+of the quote, providing it is not contained in one of the
+strings.  The alternative syntax  EDIT "BAD"GOOD"  is also
+accepted.
+
+   EDIT is compatible with all 80 column cards which support
+inverse and with all modes of the Ultraterm card.
+
+   The editor will not add spaces to lines with REM or DATA
+statements as do some editors.  In fact, spaces at the ends
+of lines are automatically removed when you accept a line
+by hitting RETURN.  (This makes a difference only with REM
+and DATA lines.)  There are rare instances when you may want
+extra spaces in a REM statement to remain.  This can be done
+by positioning the cursor at the desired spot and using the
+control Q key to end editing instead of RETURN.
+
+   If a line is too long to fit in the editing buffer then,
+upon entry to edit mode only, an attempt is made to "pack"
+it, removing the formatting spaces and changing "PRINT"
+to "?".  If the line is still too long then you will get an
+OUT OF MEMORY error message.  If a line becomes too long
+during editing then keys that would add to the buffer length
+will not be accepted.  In this case, you should remove the
+formatting spaces with the ^P command.  If this is still not
+enough you can exit the editor and reenter it, which will
+result in all "PRINTS" being changed to "?", provided the
+automatic packing occurs.
+
+   The command
+
+	AUTO 1000,100
+
+will put you into automatic line numbering mode with full editor
+support, starting at line 1000 and incrementing by 100. The
+default increment is 10 and the default starting line is some
+line past the end of the program (usually by 10).  All of the
+editor control keys are accepted except control R.
+
+   If you issue the AUTO command with a starting line that now
+exists in the program, the command will just be ignored. Also,
+if the automatic numbering reaches or passes an existing line
+you will just be dropped out of AUTO mode.  This prevents an
+existing line from being overwritten by the AUTO facility and
+also prevents unwitting interleaving with existing lines.
+
+   To exit AUTO mode, use the control X or the control C key.
+.FF10
+
+MACRO
+
+   The MACRO command invokes a set of keyboard macros. These
+can be used with the EDIT module if it is in memory.  The macro
+table can be edited with the MACRO.EDIT program.  The macro
+attached to a given key is invoked by pressing one of the "Apple
+keys" (or game buttons) while pressing the key in question.
+The macros presently defined are:
+
+	-  -> BELL, backspace, "-", 15 forward arrows and CR.
+	0  -> CATALOG
+	1  -> CATALOG,D1
+	2  -> CATALOG,D2
+	3  -> CATALOG/RAM
+	L  -> LIST
+	4  -> CHR$()
+	9  -> PRINT SPC()
+	^D -> PRINT CHR$(4)""
+	P  -> PREFIX
+	=  -> PREFIX cr (followed by keys which copy over the
+	                 first 8 characters of the resulting prefix
+	                 read from disk)
+	'  -> PRINT ""
+	G  -> GOSUB
+	I  -> IF  THEN
+	/  -> INPUT ""
+	F  -> FOR  = 1 TO
+	D  -> DATA ""
+	X  -> XDRAW
+	K  -> =PEEK(49152)  (the key location)
+	S  -> POKE49168,0   (the keyboard strobe location)
+	^U ->    (8 right arrows)
+	^H ->    (8 left arrows)
+	R  -> RENUMBER
+	H  -> HOLD
+	M  -> MERGE
+	E  -> EDIT
+	A  -> AUTO
+
+   In this list the DEL character "" stands for the spot the
+macro will stop at if invoked in immediate mode.  In edit
+mode (the EDIT command) the entire string will be produced
+and you will be left at this mark in insert mode.  The ""
+mark is not part of the actual macro.
+
+   The "-" macro is designed so that you can place the cursor
+on the first character in a catalog name and run that program
+by using that macro.  The BELL character is there for technical
+reasons and should not be removed.
+.FF
+
+   The commands involving forward arrows will not work on some
+80 column cards because the forward arrow key is handled in a
+different way by these cards.  You may wish to redefine these
+macros.  The only 80 column facility known at this time that
+does support these macros is the one on the //c.  For some
+reason, however, the "-" macro will work on the //c (even in
+40 column mode), only if you position the cursor ABOVE the
+desired line and then type control X and then the "Apple -"
+macro command.
+
+   Macros may become "disconnected" from immediate mode by
+a PR# or IN# command or the RESET key.  (This is deliberate.)
+Just type MACRO again to reconnect them.  Once connected to
+the EDIT facility, however, they are never disconnected.
+
+   In the MACRO.EDIT program, to produce the DEL mark "",
+just use the DELETE key or the control @ key at the desired
+place.  Be careful when building a macro with this program
+because you cannot use the back arrow to correct a mistake.
+The back arrow puts a control H in the string and similarly
+RETURN just puts a control M in the string.  You must exit
+with two ESC keys in a row.  (One ESC followed by any other
+character just puts those characters in the string.  You don't
+see the ESC until you press another key.)
+
+==================================================================
+
+THE FILE MACRO.2
+
+   The file MACRO.2 in the COMMANDS directory is an alternative
+version of the MACRO module which is intended for use on older
+Apples that don't have the "Apple keys".  (Although one can use
+a paddle button, that is not very convenient.)  This version of
+the macro facility uses a "leadin" key, currently control-Z, which
+should be followed by the desired macro key.  We used control-Z
+instead of ESCAPE because many 80 column cards intercept the
+ESCAPE character and preclude its use for this purpose. However,
+it is easy to change the leadin character if you do not like the
+control-Z.  This character is at relative position $124 in the
+MACRO.2 file.  (Thus it is at $4124 when the file is loaded to
+address $4000.)  To use the MACRO.2 file instead of MACRO, just
+rename the two files so that MACRO.2 becomes MACRO.
+.FF
+
+LYST
+
+   The LYST command produces a formatted listing of the program
+in memory.  The formatting includes the following features:
+
+	1.  Line numbers are right justified.
+	2.  Control characters are shown (Control-G becomes ^G).
+	3.  Program statements are printed on separate lines.
+	4.  FOR-NEXT loops are indented three spaces.
+	5.  IF produces an indentation of the rest of the line.
+	6.  Pagination and left margins are supported.
+	7.  REM statements are bounded by dashed lines (optional).
+
+   The LYST command accepts a filename parameter (used for
+the page header) and E, L, @ and R parameters.  Typical syntax is:
+
+	LYST MYPROG,E60,L70,@5
+
+   The E parameter gives the number of lines per page. Pagination
+is done only if this parameter is given.
+
+   The L parameter is the line length and defaults to 80.
+
+   The @ parameter gives the left margin and defaults to 0.
+
+   If an R parameter is given then the enclosure of REM statements
+is defeated.  The value given the parameter is immaterial.
+
+   The space bar causes the listing to pause or to step.
+Control-C aborts the listing.
+
+==================================================================
+
+RND
+
+   The RND module contains a superior, and very fast, random number
+generator.  In a program the command
+
+	PRINT CHR$(4)"RND"
+
+sets up the generator.  The generator is then used by a USR(X)
+basic statement in the same way as the ordinary RND(X) is used.
+The generator uses the same seed as the usual RND, and so a seed
+can be set with a RND(X) statement with X negative before using
+USR(1).  The value of the argument X in a USR(X) statement has
+no effect and R = USR(X) returns a random number R in the range
+
+		0<=R<1.
+
+This generator will not repeat within 4 billion uses, while the
+standard RND repeats within 40,000 uses with any seed and within
+202 uses with some seeds.  It is also about 15 times faster than
+the standard RND.
+.FF10
+.lk"doc.2"
