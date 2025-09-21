@@ -98,7 +98,7 @@ L3E8E    pha
          inx              ;round up # of pages
 :L3F2D   sta   reloc
          stx   pages
-         lda   #$f0
+         lda   #$f0       ; filetype = $f0 = basic command file 
          sta   $be52      ;merlin stuff....
          lda   reloc
          sta   $42

@@ -425,7 +425,7 @@ create
 create_pCount	dw 4
 create_pathname	adrl output
 create_access	dw $c3
-create_fileType	dw $06 ; binary
+create_fileType	dw $f0 ; basic cmd
 create_auxType	dl $4000 ; load address
 
 
