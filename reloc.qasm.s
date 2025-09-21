@@ -236,14 +236,15 @@ loadfile
 	lda [handle],y
 	sta ptr+2
 
-	lda info_eof
+	lda info_auxType
 	clc
 	adc #$00ff
 	xba
 *	short m
 	sta pages
-*	long m
 	lda info_auxType
+	clc
+	adc #$4100
 	sta reloc
 
 	clc
