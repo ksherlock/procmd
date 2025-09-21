@@ -446,6 +446,7 @@ output	ds 256+2
 
 	mx %11
 	xc off
+	lst on
 
 STREND   equ   $6d
 FRETOP   equ   $6f
@@ -460,16 +461,19 @@ CLEARC   equ   $d66c
 PRINTERR equ   $be0c
 GETBUFR  equ   $bef5
 P8_MEMTABL equ $bf58      ;memory map of lower 48K
+
+
 loader
+
          cld
-         lda   reloc
+         lda   RELOC_ABS ; reloc-loader+$4000
          sta   $40
-         lda   reloc+1
+         lda   RELOC_ABS+1 ; reloc+1-loader+$4000
          sta   $41
          lda   MEMSIZ+1
          clc
          adc   #$05
-         sbc   pages
+         sbc   PAGES_ABS ; pages-loader+$4000
          sta   $06
 :L4015   ldy   #$00
          lda   ($40),y
@@ -540,7 +544,7 @@ loader
          iny
          lda   ($3e),y
          bne   :L4069
-:L408B   lda   pages
+:L408B   lda   PAGES_ABS ; pages
          jsr   GETBUFR
          bcs   :fatal
          sta   $3f
@@ -571,7 +575,7 @@ loader
          bne   :L40C9
          inc   $3d
          inc   $3f
-         dec   pages
+         dec   PAGES_ABS ; pages
          bne   :L40C9
          nop
          nop
@@ -600,8 +604,13 @@ loader
 
 pages    dfb   $00
 reloc    dw    $0000
+RELOC_ABS equ reloc-loader+$4000
+PAGES_ABS equ pages-loader+$4000
+
          asc   "GEB"
 
          err *-loader-$0100
+
+
 
 	sav reloc.qasm.L
