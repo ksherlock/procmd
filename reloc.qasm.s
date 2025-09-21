@@ -7,6 +7,7 @@
 	lst off
 	cas in
 	tbx on
+	typ exe
 
 *	use e16.memory
 	use reloc.qasm.mac
@@ -37,7 +38,6 @@ q	ds 2
 * 2. load the input file, verify file type, reloc records
 * 3. update the header pages/reloc offset
 * 4 save to disk
-
 
 	phk
 	plb
@@ -70,7 +70,7 @@ q	ds 2
 
 cmdline
 	ph4 #:buffer
-	ph2 #256
+	ph2 #255
 	_QAGetCmdLine
 
 	lda #0 ; clear high bits
@@ -210,6 +210,7 @@ loadfile
 
 
 * _QALoadFile expects a p-string
+* type list can't be null, but 0 entries indicates all file types.
 	lda input
 	xba
 	sta input
@@ -219,7 +220,7 @@ loadfile
 	ph4 #input+1
 	ph4 #0 ; pos
 	ph4 info_eof
-	ph4 #0 ; type list
+	ph4 #:type_list ; type list
 	ph2 user_id
 	ph4 #0 ; address
 	ph2 #attrLocked.attrNoSpec
@@ -249,6 +250,8 @@ loadfile
 
 	clc
 	rts
+
+:type_list db 0
 
 :err_file_type
 	ldx #2
